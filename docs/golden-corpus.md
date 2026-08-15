@@ -79,10 +79,43 @@ report เป็น JSON (`golden-report.json` หรือ `--out`) มี over
 --provider openai|gemini
 --api-key KEY           หรือ env BILLSYNC_API_KEY / OPENAI_API_KEY / GEMINI_API_KEY
 --model MODEL
+--base-url URL          OpenAI-compatible endpoint (default https://api.openai.com/v1)
 --prompt "..."          ใช้แทน LLM_PROMPT เดิม (เฉพาะ live)
+--prompt-file path      อ่าน prompt จากไฟล์ (เช่น golden/prompts/v2.txt) — A/B ระหว่าง prompt
 --out file.json         default: golden-report.json
 --threshold 0..1        exit code 1 ถ้า accuracy ต่ำกว่า (offline default 1.0, live 0.7)
 ```
+
+## ปรับ prompt ให้แม่นขึ้น (A/B testing)
+
+ตอนนี้ `LLM_PROMPT` ใน `core/scanner/parse.ts` เป็น **v2** ที่ปรับจากช่องโหว่ที่ corpus เจอ
+(prompt เดิมเก็บไว้ที่ `golden/prompts/v1.txt`):
+
+- **total** — ระบุคำยอดรวมให้ชัด (รวมทั้งสิ้น/รวมเงินทั้งสิ้น/ยอดชำระ/ยอดรวม) + หลังหักส่วนลด
+- **date** — บังคับใช้ วันที่ใบแจ้ง ไม่ใช่ช่วงรอบบิล (เคส ais/true-move เจอว่า AI อาจเลือก 01/08 แทน 15/08)
+- **items** — รวมรายการค่าบริการในใบแจ้งหนี้ (เคส mea/water-bill: เดิม prompt บอกแค่ "รายการสินค้า" AI อาจตอบ null)
+- **vat** — ย้ำเป็นจำนวนบาท ไม่ใช่ 7% และไม่ใช่ยอดก่อนภาษี (เคส tax-invoice)
+- **merchant** — ตัด "สาขา ..."/ที่อยู่ (เคส seven-eleven/amazon-cafe)
+
+### เปรียบเทียบ v1 vs v2 (ต้องมี API key)
+
+```bash
+npm run golden:live -- --prompt-file golden/prompts/v1.txt --out report-v1.json
+npm run golden:live -- --out report-v2.json        # default = LLM_PROMPT (v2)
+npm run golden:compare report-v1.json report-v2.json
+```
+
+`golden:compare` แสดง overall/field accuracy เทียบกัน + diff รายเคสที่ผลเปลี่ยน
+
+### ลอง prompt ของตัวเอง
+
+```bash
+npm run golden:live -- --prompt-file my-prompt.txt --out report-mine.json
+npm run golden:compare report-v2.json report-mine.json
+```
+
+> offline (ไม่มี key) ยัง A/B ได้ แต่จะเห็นแค่ parser 100% ทั้งคู่ — ความต่างของ prompt เห็นชัด
+> ต้องรัน live กับ LLM จริง
 
 ## หลักการ scoring
 
@@ -103,7 +136,7 @@ report เป็น JSON (`golden-report.json` หรือ `--out`) มี over
 > หลักสำคัญ: `expected` คือความจริงของใบเสร็จ (อ่านเอง) — ถ้า pipeline อ่านผิด ให้แก้ pipeline
 > ไม่ใช่แก้ expected เพื่อให้ test ผ่าน
 
-## เคสปัจจุบัน (10)
+## เคสปัจจุบัน (13)
 
 | id | บิล | จุดที่ทดสอบ |
 |---|---|---|
@@ -117,3 +150,6 @@ report เป็น JSON (`golden-report.json` หรือ `--out`) มี over
 | coffee-friend | ร้านกาแฟ | ปี 2 หลัก (68 → 2025) |
 | true-move | ทรูมูฟ พ.ศ. | 2568, ค่าบริการ 0.00 |
 | noodle-shop | ร้านก๋วยเตี๋ยว | parser ทน response ฟอร์แมตเพี้ยน (fence) |
+| seven-eleven-long | เซเว่น 16 รายการ | รายการเยอะ, โปรโมชั่น/ส่วนลด, แคชเชียร์/บาร์โค้ด |
+| tax-invoice | ใบกำกับภาษีเต็ม | ที่อยู่บริษัท, เลขผู้เสียภาษี, ยอดก่อนภาษี + VAT แยก, ราคา 2,500.00 |
+| water-bill | บิลค่าน้ำประปา | รวมเงินทั้งสิ้น, ค่าบำรุงรักษามิเตอร์, วันที่ครบกำหนด |

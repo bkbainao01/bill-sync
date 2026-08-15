@@ -13,7 +13,8 @@
     "golden": "npm run golden:images && npm run golden:offline",
     "golden:images": "npx tsx scripts/generate-golden-images.ts",
     "golden:offline": "npx tsx scripts/run-golden.ts --mode offline",
-    "golden:live": "npx tsx scripts/run-golden.ts --mode live"
+    "golden:live": "npx tsx scripts/run-golden.ts --mode live",
+    "golden:compare": "node scripts/compare-golden.mjs"
   },
   "dependencies": {
     "@expo/metro-runtime": "~57.0.10",

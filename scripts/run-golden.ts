@@ -12,12 +12,15 @@
  *   --provider openai|gemini
  *   --api-key KEY          (หรือ env BILLSYNC_API_KEY / OPENAI_API_KEY / GEMINI_API_KEY)
  *   --model MODEL
- *   --prompt "..."         ใช้แทน LLM_PROMPT เดิม — เปรียบเทียบ accuracy ระหว่าง prompt
+ *   --base-url URL         OpenAI-compatible endpoint (default https://api.openai.com/v1)
+ *   --prompt "..."         ใช้แทน LLM_PROMPT เดิม (เฉพาะ live)
+ *   --prompt-file path     อ่าน prompt จากไฟล์ (เช่น golden/prompts/v2.txt) — A/B ระหว่าง prompt
  *   --out file.json        (default golden-report.json)
  *   --threshold 0..1       exit code 1 ถ้า accuracy ต่ำกว่า (offline default 1.0, live 0.7)
  */
 import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { resolve } from 'path';
+import { LLM_PROMPT } from '../core/scanner/parse';
 import { corpus } from '../core/scanner/golden/corpus';
 import { scoreCase, summarize, printReport } from '../core/scanner/golden/score';
 import { parseLlmResponse } from '../core/scanner/parse';
@@ -40,7 +43,8 @@ async function main(): Promise<void> {
   const apiKey =
     arg('api-key') ?? process.env.BILLSYNC_API_KEY ?? process.env.OPENAI_API_KEY ?? process.env.GEMINI_API_KEY ?? '';
   const model = arg('model') ?? '';
-  const promptOverride = arg('prompt');
+  const baseUrl = arg('base-url') ?? 'https://api.openai.com/v1';
+  const promptOverride = arg('prompt') ?? (arg('prompt-file') ? readFileSync(resolve(arg('prompt-file')!), 'utf8') : undefined);
   const outFile = arg('out') ?? 'golden-report.json';
   const threshold = Number(arg('threshold') ?? (mode === 'offline' ? '1' : '0.7'));
 
@@ -49,7 +53,7 @@ async function main(): Promise<void> {
     llm = createLlmProvider({
       provider,
       apiKey,
-      baseUrl: 'https://api.openai.com/v1',
+      baseUrl,
       model: model || (provider === 'gemini' ? 'gemini-2.5-flash' : 'gpt-4o-mini'),
       prompt: promptOverride,
     });
@@ -82,7 +86,7 @@ async function main(): Promise<void> {
   const summary = summarize(corpus, results);
   const title =
     mode === 'live'
-      ? `Golden — LIVE ${provider}${promptOverride ? ' (custom prompt)' : ''}`
+      ? `Golden — LIVE ${provider}${promptOverride ? ' (custom prompt)' : ' (LLM_PROMPT)'}`
       : 'Golden — offline (parseLlmResponse)';
   printReport(summary, title);
 
@@ -92,7 +96,7 @@ async function main(): Promise<void> {
       {
         mode,
         provider: mode === 'live' ? provider : 'parser',
-        customPrompt: promptOverride ?? null,
+        customPrompt: promptOverride ? (promptOverride === LLM_PROMPT ? 'LLM_PROMPT' : 'custom') : null,
         generatedAt: new Date().toISOString(),
         overall: summary.overall,
         exact: summary.exact,

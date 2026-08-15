@@ -27,6 +27,7 @@ const ITEM_SKIP_KEYWORDS = [
   ...HEADER_KEYWORDS,
   'เงินสด', 'เงินทอน', 'รับมา', 'รับเงิน', 'ทอน', 'cash', 'change',
   'แคชเชียร์', 'cashier', 'บาร์โค้ด', 'barcode', 'สมาชิก', 'เลขอ้างอิง', 'ชำระ',
+  'โปรโมชั่น', 'promotion', 'ลด',
 ];
 
 const NUM_RE = /-?\d{1,3}(?:,\d{3})*(?:\.\d{1,2})?/;
@@ -113,6 +114,9 @@ export function extractVat(text: string): number | null {
   const lines = text.split('\n');
   for (const line of lines) {
     if (!lineHasKeyword(line, VAT_KEYWORDS)) continue;
+    // ข้ามบรรทัดที่ไม่ใช่ตัว VAT: 'ยอดก่อนภาษี'/'ไม่รวมภาษี'/'ฐานภาษี' (ยอดก่อน VAT),
+    // 'ประจำตัวผู้เสียภาษี'/'เลขผู้เสียภาษี' (เลขทะเบียนภาษี ไม่ใช่ยอด)
+    if (lineHasKeyword(line, ['ก่อน', 'ไม่รวม', 'ฐาน', 'ประจำตัว', 'ผู้เสียภาษี'])) continue;
     const matches = [...line.matchAll(new RegExp(NUM_RE, 'g'))];
     for (const m of matches) {
       const n = toNumber(m[0]);
