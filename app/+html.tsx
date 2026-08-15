@@ -8,7 +8,7 @@ import type { PropsWithChildren } from 'react';
 const swRegistration = `
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch((err) => {
+    navigator.serviceWorker.register('sw.js').catch((err) => {
       console.warn('Service Worker registration failed:', err);
     });
   });
@@ -27,9 +27,9 @@ export default function Root({ children }: PropsWithChildren) {
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="BillSync" />
         <meta name="description" content="BillSync — บันทึกรายรับ/รายจ่าย และสแกนบิลด้วย AI" />
-        <link rel="manifest" href="/manifest.json" />
-        <link rel="apple-touch-icon" href="/logo192.png" />
-        <link rel="icon" type="image/png" sizes="192x192" href="/logo192.png" />
+        <link rel="manifest" href="manifest.json" />
+        <link rel="apple-touch-icon" href="logo192.png" />
+        <link rel="icon" type="image/png" sizes="192x192" href="logo192.png" />
         <ScrollViewStyleReset />
         <script dangerouslySetInnerHTML={{ __html: swRegistration }} />
       </head>

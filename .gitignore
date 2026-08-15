@@ -8,7 +8,9 @@ web-build/
 .expo-shared/
 expo-env.d.ts
 
-# native
+# native (CNG — prebuild สร้างใหม่ได้ทุกเมื่อ)
+android/
+ios/
 *.orig.*
 *.jks
 *.p8

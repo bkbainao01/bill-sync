@@ -1,6 +1,9 @@
+import { useState } from 'react';
 import { View } from 'react-native';
 import { Card, Divider, HStack, Switch, Text, VStack, Button, ButtonText, Input, InputField } from '@gluestack-ui/themed';
 import { useRouter } from 'expo-router';
+import { requestNotificationPermission, showNotification } from '@/lib/notify';
+import { useReminderSettings } from '@/store/reminderSettings';
 import { useCategories } from '@/hooks/useCategories';
 import { useTransactions } from '@/hooks/useTransactions';
 import { useRecurringBills } from '@/hooks/useRecurringBills';
@@ -26,6 +29,8 @@ export default function SettingsScreen() {
   const colorMode = useThemeStore((s) => s.colorMode);
   const toggleColorMode = useThemeStore((s) => s.toggleColorMode);
   const scanner = useScannerSettings();
+  const reminders = useReminderSettings();
+  const [notifyMsg, setNotifyMsg] = useState<string | null>(null);
   const { data: recurringBills = [] } = useRecurringBills();
   const dueCount = recurringBills.filter(
     (rb) => recurringStatus(rb, transactions, todayKey()).status === 'due',
@@ -152,6 +157,70 @@ export default function SettingsScreen() {
           </VStack>
           <Text size="xs" color="$textLight400">
             API key เก็บเฉพาะในเครื่องของคุณ (localStorage) — ไม่มีการส่งไปที่อื่นนอกจากผู้ให้บริการ AI ที่คุณเลือก
+          </Text>
+        </VStack>
+      </Card>
+
+      <Card style={{ borderRadius: 12 }}>
+        <VStack space="md">
+          <Text fontWeight="$bold" size="lg">
+            การแจ้งเตือนบิล
+          </Text>
+          <HStack space="md" alignItems="center" justifyContent="space-between">
+            <VStack space="xs" flex={1}>
+              <Text fontWeight="$semibold">แจ้งเตือนบิลใกล้ครบกำหนด</Text>
+              <Text size="sm" color="$textLight400">
+                แบนเนอร์ในแอปแสดงเสมอ — เปิดนี้เพื่อส่ง notification ของระบบด้วย
+              </Text>
+            </VStack>
+            <Switch value={reminders.enabled} onValueChange={reminders.setEnabled} />
+          </HStack>
+          <Divider />
+          <HStack space="md" alignItems="center" justifyContent="space-between">
+            <VStack space="xs" flex={1}>
+              <Text size="sm" fontWeight="$semibold">
+                แจ้งเตือนล่วงหน้า (วัน)
+              </Text>
+              <Text size="xs" color="$textLight400">
+                0 = เฉพาะวันครบกำหนด
+              </Text>
+            </VStack>
+            <Input size="sm" style={{ width: 96 }}>
+              <InputField
+                keyboardType="number-pad"
+                value={String(reminders.leadDays)}
+                onChangeText={(v) => {
+                  const n = parseInt(v, 10);
+                  if (!Number.isNaN(n)) reminders.setLeadDays(n);
+                }}
+              />
+            </Input>
+          </HStack>
+          <HStack space="sm" alignItems="center" justifyContent="space-between">
+            <Button
+              size="sm"
+              variant="outline"
+              borderColor="#cbd5e1"
+              onPress={() => void (async () => {
+                const status = await requestNotificationPermission();
+                if (status !== 'granted') {
+                  setNotifyMsg('ยังไม่อนุญาตให้ส่ง notification — อนุญาตในเบราว์เซอร์/ระบบ แล้วลองใหม่');
+                  return;
+                }
+                const ok = await showNotification('BillSync', 'ทดสอบการแจ้งเตือนบิล ✅');
+                setNotifyMsg(ok ? 'ส่งการแจ้งเตือนทดสอบแล้ว' : 'ส่งไม่สำเร็จ (บางเบราว์เซอร์ปิด notification)');
+              })()}
+            >
+              <ButtonText>ทดสอบการแจ้งเตือน</ButtonText>
+            </Button>
+            {notifyMsg ? (
+              <Text size="xs" color="$textLight400" flex={1} numberOfLines={2}>
+                {notifyMsg}
+              </Text>
+            ) : null}
+          </HStack>
+          <Text size="xs" color="$textLight400">
+            ใช้ระบบ notification ของเครื่อง (web: Notification API · มือถือ: expo-notifications) — ข้อมูลยังอยู่ในเครื่อง 100%
           </Text>
         </VStack>
       </Card>

@@ -4,6 +4,7 @@ import { Box, Button, ButtonText, Text } from '@gluestack-ui/themed';
 import { Ionicons } from '@expo/vector-icons';
 import { TransactionList } from '@/components/transaction/TransactionList';
 import { MonthPicker } from '@/components/MonthPicker';
+import { DueSoonBanner } from '@/components/recurring/DueSoonBanner';
 import { useCategories } from '@/hooks/useCategories';
 import { useDeleteTransaction, useTransactions } from '@/hooks/useTransactions';
 import { monthKey } from '@/core/calculations/summary';
@@ -30,6 +31,7 @@ export default function TransactionsScreen() {
   return (
     <Box flex={1} padding={16} bg="$backgroundLight50">
       <MonthPicker />
+      <DueSoonBanner />
       <Button
         variant="outline"
         borderColor="#0891b2"

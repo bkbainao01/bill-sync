@@ -1,11 +1,15 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Image, ScrollView, StyleSheet, View } from 'react-native';
-import { Button, ButtonText, Input, InputField, Text, VStack, HStack } from '@gluestack-ui/themed';
+import { Button, ButtonText, Input, InputField, Text, VStack, HStack, Switch } from '@gluestack-ui/themed';
 import type { Bill } from '@/core/entities/bill';
 import type { Category } from '@/core/entities/category';
+import type { RecurringBill } from '@/core/entities/recurringBill';
 import { suggestedTransactionFromBill } from '@/core/scanner/parse';
-import { fromSatang } from '@/core/calculations/money';
+import { fromSatang, toSatang } from '@/core/calculations/money';
 import { validateTransactionInput } from '@/core/validators/transaction';
+import { suggestRecurringLink } from '@/core/recurring/match';
+import { cadenceLabel } from '@/core/recurring/period';
+import { formatBaht } from '@/core/calculations/format';
 import { ConfidenceBadge } from './ConfidenceBadge';
 import { CategoryChips } from '../category/CategoryChips';
 
@@ -21,6 +25,8 @@ export interface ConfirmPayload {
   categoryId: string | null;
   date: string;
   note: string | null;
+  /** recurring bill ที่เชื่อม (ถ้าผู้ใช้เปิดสวิตช์) */
+  recurringBillId: string | null;
 }
 
 interface Props {
@@ -29,6 +35,8 @@ interface Props {
   onConfirm: (payload: ConfirmPayload) => void;
   onReject: () => void;
   isPending?: boolean;
+  /** บิลประจำทั้งหมด — ใช้แนะนำ link อัตโนมัติ (ร้านเดิม/ยอดใกล้เคียง) */
+  recurringBills?: RecurringBill[];
 }
 
 function FieldRow({
@@ -69,7 +77,7 @@ function FieldRow({
   );
 }
 
-export function BillReview({ bill, categories, onConfirm, onReject, isPending }: Props) {
+export function BillReview({ bill, categories, onConfirm, onReject, isPending, recurringBills }: Props) {
   const suggested = suggestedTransactionFromBill(bill);
   const ex = bill.extracted;
 
@@ -80,8 +88,30 @@ export function BillReview({ bill, categories, onConfirm, onReject, isPending }:
   const [date, setDate] = useState(suggested.date);
   const [note, setNote] = useState('');
   const [categoryId, setCategoryId] = useState<string | null>(null);
+  const [linkRecurringId, setLinkRecurringId] = useState<string | null>(null);
   const [dirty, setDirty] = useState<Record<string, boolean>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // แนะนำ recurring bill จากค่าที่ผู้ใช้กำลังเห็น (อัปเดตเมื่อแก้ไขร้าน/ยอด)
+  const match = useMemo(() => {
+    if (!recurringBills || recurringBills.length === 0) return null;
+    const amount = totalBaht.trim() ? toSatang(Number(totalBaht)) : null;
+    if (amount != null && !Number.isFinite(amount)) return null;
+    return suggestRecurringLink({
+      merchant: merchant.trim() || null,
+      amountSatang: amount,
+      recurringBills,
+    });
+  }, [recurringBills, merchant, totalBaht]);
+
+  const matchedRb = match ? recurringBills?.find((r) => r.id === match.recurringBillId) ?? null : null;
+  const linkedRb = linkRecurringId
+    ? recurringBills?.find((r) => r.id === linkRecurringId) ?? null
+    : null;
+
+  const toggleLink = (on: boolean) => {
+    setLinkRecurringId(on && match ? match.recurringBillId : null);
+  };
 
   const mark = (key: string, setter: (v: string) => void) => (v: string) => {
     setter(v);
@@ -108,6 +138,7 @@ export function BillReview({ bill, categories, onConfirm, onReject, isPending }:
       categoryId,
       date,
       note: note.trim() || null,
+      recurringBillId: linkRecurringId,
     });
   };
 
@@ -172,6 +203,39 @@ export function BillReview({ bill, categories, onConfirm, onReject, isPending }:
               <ConfidenceBadge confidence={ex.vat.confidence} />
             </HStack>
           </HStack>
+        ) : null}
+
+        {match && matchedRb ? (
+          <View style={{ backgroundColor: '#ecfeff', borderRadius: 12, padding: 12 }}>
+            <HStack space="md" alignItems="center" justifyContent="space-between">
+              <VStack space="xs" flex={1}>
+                <Text size="sm" fontWeight="$bold" style={{ color: '#155e75' }}>
+                  เจอบิลประจำที่ตรงกัน
+                </Text>
+                <Text size="sm" style={{ color: '#155e75' }}>
+                  {matchedRb.merchant} · {cadenceLabel(matchedRb)} · {formatBaht(matchedRb.amount)}
+                </Text>
+                <Text size="xs" style={{ color: '#0e7490' }}>
+                  {match.reasons.join(' · ')} — บันทึกรายการนี้แล้วจะนับว่า "จ่ายแล้ว" ของบิลนี้
+                </Text>
+              </VStack>
+              <Switch
+                value={linkRecurringId === match.recurringBillId}
+                onValueChange={toggleLink}
+              />
+            </HStack>
+          </View>
+        ) : null}
+
+        {linkedRb && !match ? (
+          <View style={{ backgroundColor: '#ecfeff', borderRadius: 12, padding: 12 }}>
+            <HStack space="md" alignItems="center" justifyContent="space-between">
+              <Text size="sm" style={{ color: '#155e75' }} flex={1}>
+                เชื่อมกับบิลประจำ: {linkedRb.merchant} ({cadenceLabel(linkedRb)})
+              </Text>
+              <Switch value onValueChange={() => setLinkRecurringId(null)} />
+            </HStack>
+          </View>
         ) : null}
 
         <VStack space="xs">

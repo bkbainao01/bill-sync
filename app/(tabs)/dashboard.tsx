@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { Box, Card, Text, VStack } from '@gluestack-ui/themed';
 import { MonthPicker } from '@/components/MonthPicker';
+import { DueSoonBanner } from '@/components/recurring/DueSoonBanner';
 import { SummaryCards } from '@/components/summary/SummaryCards';
 import { ExpenseTrendChart } from '@/components/charts/ExpenseTrendChart';
 import { CategoryDonutChart, type DonutSlice } from '@/components/charts/CategoryDonutChart';
@@ -45,6 +46,7 @@ export default function DashboardScreen() {
   return (
     <Box flex={1} padding={16} bg="$backgroundLight50">
       <MonthPicker />
+      <DueSoonBanner />
       <VStack space="md">
         <SummaryCards summary={summary} expenseDelta={expenseDelta} />
 

@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import { ScrollView, View } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
+import { Platform, ScrollView, View } from 'react-native';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Box, Button, ButtonText, Card, Center, Spinner, Text, VStack, HStack } from '@gluestack-ui/themed';
 import type { Bill } from '@/core/entities/bill';
@@ -17,6 +17,7 @@ import { BillReview, type ConfirmPayload } from '@/components/bill/BillReview';
 import { useCategories } from '@/hooks/useCategories';
 import { useBills, useCreateBill, useUpdateBill } from '@/hooks/useBills';
 import { useCreateTransaction } from '@/hooks/useTransactions';
+import { useRecurringBills } from '@/hooks/useRecurringBills';
 import { useScannerSettings } from '@/store/scannerSettings';
 
 type Stage = 'idle' | 'scanning' | 'review' | 'error';
@@ -37,9 +38,11 @@ const STATUS_COLOR: Record<Bill['status'], string> = {
 
 export default function ScanScreen() {
   const router = useRouter();
+  const { billId } = useLocalSearchParams<{ billId?: string }>();
   const settings = useScannerSettings();
   const { data: categories = [] } = useCategories();
   const { data: bills = [] } = useBills();
+  const { data: recurringBills = [] } = useRecurringBills();
   const createBill = useCreateBill();
   const updateBill = useUpdateBill();
   const createTx = useCreateTransaction();
@@ -50,6 +53,17 @@ export default function ScanScreen() {
   const [isPending, setIsPending] = useState(false);
 
   const expenseCategories = categories.filter((c) => c.type === 'expense');
+
+  // มาจากกล้อง (native): เปิดหน้า review ของบิลที่สร้างไว้แล้ว
+  useEffect(() => {
+    if (!billId || bill) return;
+    const found = bills.find((b) => b.id === billId);
+    if (found) {
+      setBill(found);
+      setError(null);
+      setStage('review');
+    }
+  }, [billId, bills, bill]);
 
   const pickImage = () => {
     if (!settings.allowCloud) {
@@ -116,6 +130,7 @@ export default function ScanScreen() {
         date: payload.date,
         merchant: payload.merchant,
         note: payload.note,
+        recurringBillId: payload.recurringBillId,
       });
       await createTx.mutateAsync(tx);
       const confirmed = { ...transitionBill(bill, 'confirm', nowIso()), transactionId: tx.id };
@@ -153,6 +168,7 @@ export default function ScanScreen() {
         <BillReview
           bill={bill}
           categories={expenseCategories}
+          recurringBills={recurringBills}
           onConfirm={(p) => void handleConfirm(p)}
           onReject={() => void handleReject()}
           isPending={isPending}
@@ -197,14 +213,24 @@ export default function ScanScreen() {
                     </Text>
                   </Center>
                 ) : (
-                  <Button
-                    bgColor="#0891b2"
-                    onPress={pickImage}
-                    isDisabled={!settings.allowCloud}
-                  >
-                    <Ionicons name="image-outline" size={18} color="#ffffff" />
-                    <ButtonText style={{ color: '#ffffff', marginLeft: 6 }}>เลือกภาพบิล</ButtonText>
-                  </Button>
+                  <VStack space="sm">
+                    {Platform.OS !== 'web' ? (
+                      <Button
+                        variant="outline"
+                        borderColor="#0891b2"
+                        onPress={() => router.push('/camera')}
+                      >
+                        <Ionicons name="camera-outline" size={18} color="#0891b2" />
+                        <ButtonText color="#0891b2" style={{ marginLeft: 6 }}>
+                          ถ่ายรูปบิล (OCR ในเครื่อง)
+                        </ButtonText>
+                      </Button>
+                    ) : null}
+                    <Button bgColor="#0891b2" onPress={pickImage} isDisabled={!settings.allowCloud}>
+                      <Ionicons name="image-outline" size={18} color="#ffffff" />
+                      <ButtonText style={{ color: '#ffffff', marginLeft: 6 }}>เลือกภาพบิล</ButtonText>
+                    </Button>
+                  </VStack>
                 )}
 
                 {stage === 'error' ? (

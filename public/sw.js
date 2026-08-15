@@ -1,5 +1,7 @@
 /* BillSync Service Worker — offline support (web) */
 const CACHE_NAME = 'billsync-v1';
+// สโคปของ SW (รองรับการโฮสต์ใต้ subpath เช่น GitHub Pages /bill-sync/)
+const SCOPE = new URL('./', self.location.href).href;
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
@@ -44,7 +46,7 @@ self.addEventListener('fetch', (event) => {
         .catch(async () => {
           const cached = await caches.match(request);
           if (cached) return cached;
-          const root = await caches.match('/');
+          const root = await caches.match(SCOPE);
           return root ?? Response.error();
         }),
     );
