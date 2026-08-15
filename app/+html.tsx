@@ -17,7 +17,8 @@ if ('serviceWorker' in navigator) {
 
 export default function Root({ children }: PropsWithChildren) {
   return (
-    <html lang="th">
+    // class/data-theme-id = ธีมเริ่มต้น (light) ที่ gluestack-ui inject ฝั่ง client — ใส่ใน SSR ด้วยเพื่อให้ HTML ตรงกัน
+    <html lang="th" className="gs gs-light" suppressHydrationWarning>
       <head>
         <meta charSet="utf-8" />
         <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
@@ -33,7 +34,7 @@ export default function Root({ children }: PropsWithChildren) {
         <ScrollViewStyleReset />
         <script dangerouslySetInnerHTML={{ __html: swRegistration }} />
       </head>
-      <body>{children}</body>
+      <body data-theme-id="light" suppressHydrationWarning>{children}</body>
     </html>
   );
 }
