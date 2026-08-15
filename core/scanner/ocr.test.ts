@@ -71,8 +71,8 @@ describe('extractVat', () => {
 });
 
 describe('extractMerchant', () => {
-  it('ได้บรรทัดแรกที่ดูเป็นชื่อร้าน', () => {
-    expect(extractMerchant(SEVEN_ELEVEN)).toBe('7-Eleven สาขาสุขุมวิท 39');
+  it('ได้บรรทัดแรกที่ดูเป็นชื่อร้าน (ตัด สาขา ทิ้ง)', () => {
+    expect(extractMerchant(SEVEN_ELEVEN)).toBe('7-Eleven');
     expect(extractMerchant(MEA_BILL)).toBe('การไฟฟ้านครหลวง');
   });
 
@@ -109,7 +109,7 @@ describe('extractItems', () => {
 describe('parseOcrText', () => {
   it('รวมผลเป็น LlmExtraction (source ocr)', () => {
     const r = parseOcrText(SEVEN_ELEVEN);
-    expect(r.merchant.value).toBe('7-Eleven สาขาสุขุมวิท 39');
+    expect(r.merchant.value).toBe('7-Eleven');
     expect(r.total.value).toBe(72.5);
     expect(r.date.value).toBe('2025-08-18');
     expect(r.total.confidence).toBe(0.85);

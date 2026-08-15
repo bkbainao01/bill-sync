@@ -13,8 +13,8 @@ const HEADER_KEYWORDS = [
 ];
 
 const TOTAL_KEYWORDS = [
-  'รวมทั้งสิ้น', 'ยอดรวม', 'รวมสุทธิ', 'ยอดเงิน', 'grand total', 'total due',
-  'amount due', 'net total', 'ยอดชำระ', 'total',
+  'รวมทั้งสิ้น', 'ยอดรวม', 'รวมสุทธิ', 'ยอดเงิน', 'รวมเป็นเงิน', 'รวมเป็นจำนวน',
+  'รวม', 'subtotal', 'grand total', 'total due', 'amount due', 'net total', 'ยอดชำระ', 'total',
 ];
 
 const VAT_KEYWORDS = ['vat', 'v.a.t', 'ภาษีมูลค่าเพิ่ม', 'ภาษี'];
@@ -25,7 +25,8 @@ const ITEM_SKIP_KEYWORDS = [
   ...TOTAL_KEYWORDS,
   ...VAT_KEYWORDS,
   ...HEADER_KEYWORDS,
-  'เงินสด', 'เงินทอน', 'รับมา', 'ทอน', 'cash', 'change',
+  'เงินสด', 'เงินทอน', 'รับมา', 'รับเงิน', 'ทอน', 'cash', 'change',
+  'แคชเชียร์', 'cashier', 'บาร์โค้ด', 'barcode', 'สมาชิก', 'เลขอ้างอิง', 'ชำระ',
 ];
 
 const NUM_RE = /-?\d{1,3}(?:,\d{3})*(?:\.\d{1,2})?/;
@@ -134,22 +135,30 @@ function looksLikeMerchant(line: string): boolean {
 export function extractMerchant(text: string): string | null {
   const lines = text.split('\n').map((l) => l.trim()).filter(Boolean);
   for (const line of lines) {
-    if (looksLikeMerchant(line)) return line.replace(/\s+/g, ' ').slice(0, 100);
+    if (!looksLikeMerchant(line)) continue;
+    // ตัดคำต่อท้าย 'สาขา …' (รวม OCR อ่าน 'สาข์') — ชื่อร้านจบที่ชื่อแบรนด์
+    const branch = line.search(/สาข[า์]/);
+    const name = branch >= 0 ? line.slice(0, branch) : line;
+    const cleaned = name.replace(/\s+/g, ' ').trim();
+    if (cleaned.length >= 2) return cleaned.slice(0, 100);
   }
   return null;
 }
 
-/** แยกรายการสินค้า: "ชื่อ... ราคา" (ตัวเลขต่อท้ายบรรทัด) */
+/** แยกรายการสินค้า: "ชื่อ... ราคา" หรือ "ชื่อ... จำนวน ราคา" (ตัวเลขต่อท้ายบรรทัด) */
 export function extractItems(text: string): ExtractedItem[] | null {
   const items: ExtractedItem[] = [];
   const lines = text.split('\n');
   for (const rawLine of lines) {
     if (items.length >= 30) break;
     const line = rawLine.trim();
-    const m = /^(.+?)\s+(-?\d{1,3}(?:,\d{3})*(?:\.\d{1,2})?)\s*$/.exec(line);
+    // "ชื่อ จำนวน ราคา" เช่น 'โค้ก 1 15.00' — ตัวเลขตัวสุดท้ายคือราคา
+    const qty = /^(.+?)\s+(\d{1,3})\s+(-?\d{1,3}(?:,\d{3})*(?:\.\d{1,2})?)\s*$/.exec(line);
+    const m = qty ?? /^(.+?)\s+(-?\d{1,3}(?:,\d{3})*(?:\.\d{1,2})?)\s*$/.exec(line);
     if (!m) continue;
     const name = m[1].trim();
-    const price = toNumber(m[2]);
+    // qty pattern มี 3 groups (name, จำนวน, ราคา) — ราคาคือกลุ่มสุดท้าย
+    const price = toNumber(m[m.length - 1]);
     if (price === null || price <= 0) continue;
     if (name.length < 2 || name.length > 60) continue;
     if (/^[\d\s,./\-:()]+$/.test(name)) continue;

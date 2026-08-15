@@ -1,0 +1,388 @@
+import type { GoldenCase } from './types';
+
+/**
+ * Golden corpus — ใบเสร็จ/บิลตัวอย่าง (ไทย) พร้อม ground truth
+ * ใช้ 3 ทาง:
+ *  1. OCR pipeline: rawText → parseOcrText → เทียบ expected
+ *  2. LLM parser:  llmResponse → parseLlmResponse → เทียบ expected
+ *  3. LLM จริง (live): รูปใน golden/images/ → provider → เทียบ expected
+ * เพิ่มเคสใหม่เมื่อเจอใบเสร็จรูปแบบใหม่ — ยิ่งครบ ยิ่งกัน regression ตอนแก้ prompt/provider
+ */
+export const corpus: GoldenCase[] = [
+  {
+    id: 'seven-eleven',
+    label: 'เซเว่น อีเลฟเว่น — สินค้า 4 รายการ + VAT + เงินทอน',
+    rawText: `เซเว่น อีเลฟเว่น สาขา 1392
+ใบเสร็จรับเงิน
+03/09/2569 14:23:45
+แคชเชียร์ 05
+
+โค้ก 1 15.00
+ขนมปัง 2 45.00
+น้ำเปล่า 1 12.50
+คาปูชิโน่ 1 55.00
+
+ภาษีมูลค่าเพิ่ม 7% 8.34
+รวมทั้งสิ้น 127.50
+รับเงินสด 500.00
+เงินทอน 372.50`,
+    llmResponse: `{
+  "merchant": { "value": "เซเว่น อีเลฟเว่น", "confidence": 0.98 },
+  "total": { "value": 127.5, "confidence": 0.99 },
+  "date": { "value": "2026-09-03", "confidence": 0.95 },
+  "vat": { "value": 8.34, "confidence": 0.9 },
+  "items": { "value": [
+    { "name": "โค้ก", "price": 15 },
+    { "name": "ขนมปัง", "price": 45 },
+    { "name": "น้ำเปล่า", "price": 12.5 },
+    { "name": "คาปูชิโน่", "price": 55 }
+  ], "confidence": 0.9 },
+  "summary": "ใบเสร็จเซเว่น อีเลฟเว่น 3 ก.ย. 2569 รวม 127.50 บาท"
+}`,
+    imagePath: 'golden/images/seven-eleven.png',
+    expected: {
+      merchant: 'เซเว่น อีเลฟเว่น',
+      total: 127.5,
+      date: '2026-09-03',
+      vat: 8.34,
+      items: [
+        { name: 'โค้ก', price: 15 },
+        { name: 'ขนมปัง', price: 45 },
+        { name: 'น้ำเปล่า', price: 12.5 },
+        { name: 'คาปูชิโน่', price: 55 },
+      ],
+    },
+  },
+  {
+    id: 'lotus',
+    label: 'โลตัส — สินค้า + ส่วนลด + VAT',
+    rawText: `โลตัส สาขารามอินทรา
+TAX INVOICE / ใบกำกับภาษี
+22/10/2568 18:42
+
+น้ำยาล้างจาน 59.00
+ผงซักฟอก 1.5kg 129.00
+ข้าวหอมมะลิ 5kg 249.00
+ส่วนลด -20.00
+รวม 417.00
+VAT 7% 27.27
+รวมทั้งสิ้น 417.00
+เงินสด 500.00
+เงินทอน 83.00`,
+    llmResponse: `{
+  "merchant": { "value": "โลตัส", "confidence": 0.97 },
+  "total": { "value": 417, "confidence": 0.99 },
+  "date": { "value": "2025-10-22", "confidence": 0.95 },
+  "vat": { "value": 27.27, "confidence": 0.9 },
+  "items": { "value": [
+    { "name": "น้ำยาล้างจาน", "price": 59 },
+    { "name": "ผงซักฟอก 1.5kg", "price": 129 },
+    { "name": "ข้าวหอมมะลิ 5kg", "price": 249 }
+  ], "confidence": 0.85 },
+  "summary": "ใบกำกับภาษีโลตัส รวม 417.00 บาท (หักส่วนลด 20 บาท)"
+}`,
+    imagePath: 'golden/images/lotus.png',
+    expected: {
+      merchant: 'โลตัส',
+      total: 417,
+      date: '2025-10-22',
+      vat: 27.27,
+      items: [
+        { name: 'น้ำยาล้างจาน', price: 59 },
+        { name: 'ผงซักฟอก 1.5kg', price: 129 },
+        { name: 'ข้าวหอมมะลิ 5kg', price: 249 },
+      ],
+    },
+  },
+  {
+    id: 'mea',
+    label: 'การไฟฟ้านครหลวง — ใบแจ้งค่าไฟฟ้า (ไม่มีรายการสินค้า)',
+    rawText: `การไฟฟ้านครหลวง
+ใบแจ้งค่าไฟฟ้า
+งวดที่ 08/2569
+เลขที่ผู้ใช้ไฟ 123456789
+
+ค่าไฟฟ้า 728.97
+ค่าบริการ 8.19
+ค่า Ft 62.84
+
+ภาษีมูลค่าเพิ่ม 7% 56.00
+ยอดชำระ 856.00
+ครบกำหนดชำระ 25/08/2569`,
+    llmResponse: `{
+  "merchant": { "value": "การไฟฟ้านครหลวง", "confidence": 0.99 },
+  "total": { "value": 856, "confidence": 0.98 },
+  "date": { "value": "2026-08-25", "confidence": 0.85 },
+  "vat": { "value": 56, "confidence": 0.9 },
+  "items": { "value": [
+    { "name": "ค่าไฟฟ้า", "price": 728.97 },
+    { "name": "ค่าบริการ", "price": 8.19 },
+    { "name": "ค่า Ft", "price": 62.84 }
+  ], "confidence": 0.85 },
+  "summary": "ใบแจ้งค่าไฟฟ้าการไฟฟ้านครหลวง งวด 08/2569 ยอดชำระ 856.00 บาท"
+}`,
+    imagePath: 'golden/images/mea.png',
+    expected: {
+      merchant: 'การไฟฟ้านครหลวง',
+      total: 856,
+      date: '2026-08-25',
+      vat: 56,
+      items: [
+        { name: 'ค่าไฟฟ้า', price: 728.97 },
+        { name: 'ค่าบริการ', price: 8.19 },
+        { name: 'ค่า Ft', price: 62.84 },
+      ],
+    },
+  },
+  {
+    id: 'ais',
+    label: 'AIS — ใบแจ้งค่าใช้บริการมือถือ + VAT',
+    rawText: `AIS
+ใบแจ้งค่าใช้บริการ
+เลขที่ใบแจ้ง 2026-08-1234
+วันที่ใบแจ้ง 15/08/2569
+รอบบิล 01/08/2569 - 31/08/2569
+
+ค่าแพ็กเกจมือถือ 399.00
+ค่าบริการ 30.00
+
+ภาษีมูลค่าเพิ่ม 7% 30.03
+รวมทั้งสิ้น 459.03`,
+    llmResponse: `{
+  "merchant": { "value": "AIS", "confidence": 0.99 },
+  "total": { "value": 459.03, "confidence": 0.98 },
+  "date": { "value": "2026-08-15", "confidence": 0.9 },
+  "vat": { "value": 30.03, "confidence": 0.9 },
+  "items": { "value": [
+    { "name": "ค่าแพ็กเกจมือถือ", "price": 399 },
+    { "name": "ค่าบริการ", "price": 30 }
+  ], "confidence": 0.8 },
+  "summary": "ใบแจ้งค่าใช้บริการ AIS รอบบิล ส.ค. 2569 รวม 459.03 บาท"
+}`,
+    imagePath: 'golden/images/ais.png',
+    expected: {
+      merchant: 'AIS',
+      total: 459.03,
+      date: '2026-08-15',
+      vat: 30.03,
+      items: [
+        { name: 'ค่าแพ็กเกจมือถือ', price: 399 },
+        { name: 'ค่าบริการ', price: 30 },
+      ],
+    },
+  },
+  {
+    id: 'restaurant',
+    label: 'ร้านอาหาร — วันที่เป็นชื่อเดือนไทย + จำนวน x ราคา',
+    rawText: `ครัวคุณยาย
+ใบเสร็จรับเงิน
+12 ส.ค. 2569 19:30
+
+ข้าวผัดกุ้ง 85.00
+ต้มยำกุ้ง 180.00
+ไก่ทอด 120.00
+น้ำเปล่า 20.00
+ข้าวเปล่า 2 20.00
+
+รวมทั้งสิ้น 425.00
+เงินสด 500.00
+เงินทอน 75.00`,
+    llmResponse: `{
+  "merchant": { "value": "ครัวคุณยาย", "confidence": 0.98 },
+  "total": { "value": 425, "confidence": 0.99 },
+  "date": { "value": "2026-08-12", "confidence": 0.95 },
+  "vat": { "value": null, "confidence": 0.9 },
+  "items": { "value": [
+    { "name": "ข้าวผัดกุ้ง", "price": 85 },
+    { "name": "ต้มยำกุ้ง", "price": 180 },
+    { "name": "ไก่ทอด", "price": 120 },
+    { "name": "น้ำเปล่า", "price": 20 },
+    { "name": "ข้าวเปล่า", "price": 20 }
+  ], "confidence": 0.9 },
+  "summary": "ใบเสร็จครัวคุณยาย รวม 425.00 บาท"
+}`,
+    imagePath: 'golden/images/restaurant.png',
+    expected: {
+      merchant: 'ครัวคุณยาย',
+      total: 425,
+      date: '2026-08-12',
+      vat: null,
+      items: [
+        { name: 'ข้าวผัดกุ้ง', price: 85 },
+        { name: 'ต้มยำกุ้ง', price: 180 },
+        { name: 'ไก่ทอด', price: 120 },
+        { name: 'น้ำเปล่า', price: 20 },
+        { name: 'ข้าวเปล่า', price: 20 },
+      ],
+    },
+  },
+  {
+    id: 'amazon-cafe',
+    label: 'คาเฟ่ อเมซอน — ไม่มี VAT',
+    rawText: `คาเฟ่ อเมซอน สาขาเซ็นทรัล
+15/08/2569 10:05
+
+อเมซอนคอฟฟี่ 65.00
+ครัวซองต์ 45.00
+น้ำส้ม 40.00
+
+รวมทั้งสิ้น 150.00`,
+    llmResponse: `{
+  "merchant": { "value": "คาเฟ่ อเมซอน", "confidence": 0.97 },
+  "total": { "value": 150, "confidence": 0.99 },
+  "date": { "value": "2026-08-15", "confidence": 0.95 },
+  "vat": { "value": null, "confidence": 0.95 },
+  "items": { "value": [
+    { "name": "อเมซอนคอฟฟี่", "price": 65 },
+    { "name": "ครัวซองต์", "price": 45 },
+    { "name": "น้ำส้ม", "price": 40 }
+  ], "confidence": 0.9 },
+  "summary": "ใบเสร็จคาเฟ่ อเมซอน รวม 150.00 บาท"
+}`,
+    imagePath: 'golden/images/amazon-cafe.png',
+    expected: {
+      merchant: 'คาเฟ่ อเมซอน',
+      total: 150,
+      date: '2026-08-15',
+      vat: null,
+      items: [
+        { name: 'อเมซอนคอฟฟี่', price: 65 },
+        { name: 'ครัวซองต์', price: 45 },
+        { name: 'น้ำส้ม', price: 40 },
+      ],
+    },
+  },
+  {
+    id: 'shop-keep',
+    label: 'ร้านค้าชำ — ใบเสร็จแบบง่าย ไม่มี VAT/รายการ',
+    rawText: `ร้านขายของชำคุณป้า
+ใบเสร็จรับเงิน
+18/08/68
+
+รวมเป็นเงิน 250.00
+รับเงิน 300.00
+เงินทอน 50.00`,
+    llmResponse: `{
+  "merchant": { "value": "ร้านขายของชำคุณป้า", "confidence": 0.97 },
+  "total": { "value": 250, "confidence": 0.98 },
+  "date": { "value": "2025-08-18", "confidence": 0.9 },
+  "vat": { "value": null, "confidence": 0.95 },
+  "items": { "value": null, "confidence": 0.9 },
+  "summary": "ใบเสร็จร้านขายของชำ รวม 250.00 บาท"
+}`,
+    imagePath: 'golden/images/shop-keep.png',
+    expected: {
+      merchant: 'ร้านขายของชำคุณป้า',
+      total: 250,
+      date: '2025-08-18',
+      vat: null,
+      items: null,
+    },
+  },
+  {
+    id: 'coffee-friend',
+    label: 'ร้านกาแฟ — ปี ค.ศ. 2 หลัก (68 → 2568)',
+    rawText: `ร้านกาแฟเพื่อน
+15/09/68 08:30
+
+อเมริกาโน่ 60.00
+ลาเต้ 70.00
+
+รวมทั้งสิ้น 130.00`,
+    llmResponse: `{
+  "merchant": { "value": "ร้านกาแฟเพื่อน", "confidence": 0.97 },
+  "total": { "value": 130, "confidence": 0.99 },
+  "date": { "value": "2025-09-15", "confidence": 0.9 },
+  "vat": { "value": null, "confidence": 0.95 },
+  "items": { "value": [
+    { "name": "อเมริกาโน่", "price": 60 },
+    { "name": "ลาเต้", "price": 70 }
+  ], "confidence": 0.9 },
+  "summary": "ใบเสร็จร้านกาแฟเพื่อน รวม 130.00 บาท"
+}`,
+    imagePath: 'golden/images/coffee-friend.png',
+    expected: {
+      merchant: 'ร้านกาแฟเพื่อน',
+      total: 130,
+      date: '2025-09-15',
+      vat: null,
+      items: [
+        { name: 'อเมริกาโน่', price: 60 },
+        { name: 'ลาเต้', price: 70 },
+      ],
+    },
+  },
+  {
+    id: 'true-move',
+    label: 'ทรูมูฟ เอช — ใบแจ้งค่าใช้บริการ พ.ศ. (2568)',
+    rawText: `ทรูมูฟ เอช
+ใบแจ้งค่าใช้บริการ
+วันที่ใบแจ้ง 05/12/2568
+รอบบิล 01/12/2568 - 31/12/2568
+
+ค่าบริการรายเดือน 299.00
+ค่าบริการ 0.00
+
+ภาษีมูลค่าเพิ่ม 7% 20.93
+รวมทั้งสิ้น 319.93`,
+    llmResponse: `{
+  "merchant": { "value": "ทรูมูฟ เอช", "confidence": 0.98 },
+  "total": { "value": 319.93, "confidence": 0.98 },
+  "date": { "value": "2025-12-05", "confidence": 0.9 },
+  "vat": { "value": 20.93, "confidence": 0.9 },
+  "items": { "value": [
+    { "name": "ค่าบริการรายเดือน", "price": 299 }
+  ], "confidence": 0.8 },
+  "summary": "ใบแจ้งค่าใช้บริการทรูมูฟ เอช รวม 319.93 บาท"
+}`,
+    imagePath: 'golden/images/true-move.png',
+    expected: {
+      merchant: 'ทรูมูฟ เอช',
+      total: 319.93,
+      date: '2025-12-05',
+      vat: 20.93,
+      items: [{ name: 'ค่าบริการรายเดือน', price: 299 }],
+    },
+  },
+  {
+    id: 'noodle-shop',
+    label: 'ร้านก๋วยเตี๋ยว — ทดสอบ parser ทนทานต่อ response ฟอร์แมตเพี้ยน',
+    rawText: `ก๋วยเตี๋ยวเรือเจ้าอร่อย
+ใบเสร็จรับเงิน
+20/08/2569 12:15
+
+ก๋วยเตี๋ยวเรือ 60.00
+ลูกชิ้น 20.00
+น้ำอัดลม 25.00
+
+รวมทั้งสิ้น 105.00`,
+    llmResponse: `นี่คือข้อมูลที่อ่านได้จากใบเสร็จครับ:
+\`\`\`json
+{
+  "merchant": { "value": "ก๋วยเตี๋ยวเรือเจ้าอร่อย", "confidence": 0.96 },
+  "total": { "value": 105, "confidence": 0.99 },
+  "date": { "value": "2026-08-20", "confidence": 0.95 },
+  "vat": { "value": null, "confidence": 0.9 },
+  "items": { "value": [
+    { "name": "ก๋วยเตี๋ยวเรือ", "price": 60 },
+    { "name": "ลูกชิ้น", "price": 20 },
+    { "name": "น้ำอัดลม", "price": 25 }
+  ], "confidence": 0.9 },
+  "summary": "ใบเสร็จร้านก๋วยเตี๋ยวเรือ รวม 105.00 บาท"
+}
+\`\`\`
+หากต้องการข้อมูลเพิ่มเติมแจ้งได้ครับ`,
+    imagePath: 'golden/images/noodle-shop.png',
+    expected: {
+      merchant: 'ก๋วยเตี๋ยวเรือเจ้าอร่อย',
+      total: 105,
+      date: '2026-08-20',
+      vat: null,
+      items: [
+        { name: 'ก๋วยเตี๋ยวเรือ', price: 60 },
+        { name: 'ลูกชิ้น', price: 20 },
+        { name: 'น้ำอัดลม', price: 25 },
+      ],
+    },
+  },
+];

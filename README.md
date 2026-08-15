@@ -20,6 +20,19 @@
 - **PWA** — ติดตั้งได้, ทำงาน offline (service worker + manifest), ไอคอน/ธีมสีตามแบรนด์
 - **ธีมมืด/สว่าง**, ส่งออก CSV / สำรองข้อมูล JSON
 
+## 🎯 Golden Test Corpus (วัดความแม่นยำของ pipeline สแกนบิล)
+
+คลังใบเสร็จตัวอย่าง (ไทย) 10 ใบ พร้อม ground truth — วัดว่า OCR/parser/vision-LLM อ่านบิลได้แม่นแค่ไหน โดยเฉพาะตอน**เปลี่ยน prompt หรือ provider**:
+
+```bash
+npm run golden:images      # วาดรูปใบเสร็จตัวอย่าง → golden/images/
+npm run golden:offline     # เทสต์ parser กับ golden responses (ไม่ต้องใช้ API key)
+npm run golden:live        # เรียก LLM จริง วัด accuracy (ต้อง BILLSYNC_API_KEY)
+npm run golden:live -- --provider gemini --prompt "prompt ใหม่..."   # เทียบ prompt/provider
+```
+
+รายละเอียด: [docs/golden-corpus.md](docs/golden-corpus.md) · corpus อยู่ใน `core/scanner/golden/`
+
 ## 🛠 Tech Stack
 
 | ชั้น | เทคโนโลยี |

@@ -9,7 +9,11 @@
     "ios": "expo run:ios",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "icons": "node scripts/generate-icons.mjs"
+    "icons": "node scripts/generate-icons.mjs",
+    "golden": "npm run golden:images && npm run golden:offline",
+    "golden:images": "npx tsx scripts/generate-golden-images.ts",
+    "golden:offline": "npx tsx scripts/run-golden.ts --mode offline",
+    "golden:live": "npx tsx scripts/run-golden.ts --mode live"
   },
   "dependencies": {
     "@expo/metro-runtime": "~57.0.10",
@@ -45,7 +49,9 @@
   "devDependencies": {
     "@types/react": "~19.2.2",
     "babel-preset-expo": "~57.0.7",
+    "canvas": "^3.2.3",
     "pngjs": "^7.0.0",
+    "tsx": "^4.23.12",
     "typescript": "~6.0.3",
     "vitest": "^4.1.10"
   },

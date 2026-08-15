@@ -1,12 +1,14 @@
-import type { ImageSource, LlmExtraction } from '@/core/scanner/types';
-import { LLM_PROMPT, parseLlmResponse } from '@/core/scanner/parse';
-import type { LlmProviderId } from '@/store/scannerSettings';
+import type { ImageSource, LlmExtraction } from '../../core/scanner/types';
+import { LLM_PROMPT, parseLlmResponse } from '../../core/scanner/parse';
+import type { LlmProviderId } from '../../store/scannerSettings';
 
 export interface LlmConfig {
   provider: LlmProviderId;
   apiKey: string;
   baseUrl: string;
   model: string;
+  /** ใช้แทน LLM_PROMPT เดิม — สำหรับทดลองปรับ prompt แล้ววัด accuracy (golden corpus) */
+  prompt?: string;
 }
 
 interface LlmProvider {
@@ -57,7 +59,7 @@ class OpenAiCompatibleProvider implements LlmProvider {
           {
             role: 'user',
             content: [
-              { type: 'text', text: LLM_PROMPT },
+              { type: 'text', text: this.cfg.prompt ?? LLM_PROMPT },
               { type: 'image_url', image_url: { url: image.uri } },
             ],
           },
@@ -93,7 +95,7 @@ class GeminiProvider implements LlmProvider {
         contents: [
           {
             parts: [
-              { text: LLM_PROMPT },
+              { text: this.cfg.prompt ?? LLM_PROMPT },
               { inline_data: { mime_type: mimeType, data: base64 } },
             ],
           },
