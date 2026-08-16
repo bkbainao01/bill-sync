@@ -12,6 +12,7 @@ import { nowIso } from '@/core/entities/base';
 import { formatBaht, formatDateThai } from '@/core/calculations/format';
 import { toSatang } from '@/core/calculations/money';
 import { createLlmProvider } from '@/adapters/scanner/providers';
+import { BRAND } from '@/theme/tokens';
 import { pickImageFromDevice } from '@/components/bill/pickImage';
 import { BillReview, type ConfirmPayload } from '@/components/bill/BillReview';
 import { useCategories } from '@/hooks/useCategories';
@@ -179,7 +180,7 @@ export default function ScanScreen() {
             <Card style={{ borderRadius: 12 }}>
               <VStack space="sm">
                 <HStack space="sm" alignItems="center">
-                  <Ionicons name="scan-outline" size={20} color="#0891b2" />
+                  <Ionicons name="scan-outline" size={20} color={BRAND} />
                   <Text fontWeight="$bold" size="lg">
                     สแกนบิลด้วย AI
                   </Text>
@@ -207,7 +208,7 @@ export default function ScanScreen() {
 
                 {stage === 'scanning' ? (
                   <Center style={{ paddingVertical: 24 }}>
-                    <Spinner color="#0891b2" />
+                    <Spinner color={BRAND} />
                     <Text size="sm" color="$textLight400" style={{ marginTop: 8 }}>
                       AI กำลังอ่านบิล…
                     </Text>
@@ -217,16 +218,16 @@ export default function ScanScreen() {
                     {Platform.OS !== 'web' ? (
                       <Button
                         variant="outline"
-                        borderColor="#0891b2"
+                        borderColor={BRAND}
                         onPress={() => router.push('/camera')}
                       >
-                        <Ionicons name="camera-outline" size={18} color="#0891b2" />
-                        <ButtonText color="#0891b2" style={{ marginLeft: 6 }}>
+                        <Ionicons name="camera-outline" size={18} color={BRAND} />
+                        <ButtonText color={BRAND} style={{ marginLeft: 6 }}>
                           ถ่ายรูปบิล (OCR ในเครื่อง)
                         </ButtonText>
                       </Button>
                     ) : null}
-                    <Button bgColor="#0891b2" onPress={pickImage} isDisabled={!settings.allowCloud}>
+                    <Button bgColor={BRAND} onPress={pickImage} isDisabled={!settings.allowCloud}>
                       <Ionicons name="image-outline" size={18} color="#ffffff" />
                       <ButtonText style={{ color: '#ffffff', marginLeft: 6 }}>เลือกภาพบิล</ButtonText>
                     </Button>

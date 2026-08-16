@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { GluestackUIProvider } from '@gluestack-ui/themed';
-import { config } from '@gluestack-ui/config';
+import { config } from '@/theme/config';
 import { useThemeStore } from '@/store/theme';
 
 /**

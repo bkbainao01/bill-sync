@@ -9,6 +9,7 @@ import { createTransactionFromRecurring } from '@/core/recurring/fromRecurring';
 import { todayKey } from '@/core/calculations/format';
 import { RecurringBillRow } from '@/components/recurring/RecurringBillRow';
 import { RecurringForm } from '@/components/recurring/RecurringForm';
+import { BRAND } from '@/theme/tokens';
 import { useCategories } from '@/hooks/useCategories';
 import { useTransactions, useCreateTransaction } from '@/hooks/useTransactions';
 import {
@@ -64,7 +65,7 @@ export default function RecurringScreen() {
   if (isLoading) {
     return (
       <Center flex={1}>
-        <Spinner color="#0891b2" />
+        <Spinner color={BRAND} />
       </Center>
     );
   }
@@ -72,7 +73,7 @@ export default function RecurringScreen() {
   return (
     <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 16, paddingBottom: 48 }}>
       <VStack space="md">
-        <Button bgColor="#0891b2" onPress={() => setShowForm((v) => !v)}>
+        <Button bgColor={BRAND} onPress={() => setShowForm((v) => !v)}>
           <Ionicons name={showForm ? 'close' : 'add'} size={18} color="#ffffff" />
           <ButtonText style={{ color: '#ffffff', marginLeft: 6 }}>
             {showForm ? 'ปิดฟอร์ม' : 'เพิ่มบิลประจำ'}

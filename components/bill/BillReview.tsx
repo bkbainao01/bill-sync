@@ -12,9 +12,11 @@ import { cadenceLabel } from '@/core/recurring/period';
 import { formatBaht } from '@/core/calculations/format';
 import { ConfidenceBadge } from './ConfidenceBadge';
 import { CategoryChips } from '../category/CategoryChips';
+import { BRAND } from '@/theme/tokens';
+import { hapticImpact, hapticSuccess } from '@/lib/haptics';
 
 const COLORS = {
-  primary: '#0891b2',
+  primary: BRAND,
   danger: '#dc2626',
   white: '#ffffff',
 };
@@ -132,6 +134,7 @@ export function BillReview({ bill, categories, onConfirm, onReject, isPending, r
       return;
     }
     setErrors({});
+    hapticSuccess(); // iOS: ยืนยันสำเร็จ
     onConfirm({
       merchant: merchant.trim() || null,
       amountSatang: result.amountSatang,
@@ -145,7 +148,11 @@ export function BillReview({ bill, categories, onConfirm, onReject, isPending, r
   const totalConfidence = ex.total?.confidence ?? 0;
 
   return (
-    <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+    <ScrollView
+      contentContainerStyle={styles.container}
+      keyboardShouldPersistTaps="handled"
+      contentInsetAdjustmentBehavior="automatic"
+    >
       <VStack space="md">
         {ex.summary?.value && ex.merchant?.value ? (
           <Text size="sm" color="$textLight400">
@@ -259,7 +266,10 @@ export function BillReview({ bill, categories, onConfirm, onReject, isPending, r
             flex={1}
             variant="outline"
             borderColor={COLORS.danger}
-            onPress={onReject}
+            onPress={() => {
+              hapticImpact(); // iOS: รู้สึกถึงการปฏิเสธ
+              onReject();
+            }}
             isDisabled={isPending}
           >
             <ButtonText style={{ color: COLORS.danger }}>ปฏิเสธ</ButtonText>

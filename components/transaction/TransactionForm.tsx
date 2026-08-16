@@ -10,9 +10,11 @@ import { validateTransactionInput } from '@/core/validators/transaction';
 import { useCategories } from '@/hooks/useCategories';
 import { useCreateTransaction } from '@/hooks/useTransactions';
 import { CategoryChips } from '../category/CategoryChips';
+import { BRAND } from '@/theme/tokens';
+import { hapticSuccess } from '@/lib/haptics';
 
 const COLORS = {
-  primary: '#0891b2',
+  primary: BRAND,
   income: '#16a34a',
   expense: '#dc2626',
   white: '#ffffff',
@@ -70,6 +72,7 @@ export function TransactionForm() {
     });
     try {
       await createTx.mutateAsync(tx);
+      hapticSuccess(); // iOS: รู้สึกถึงการบันทึกสำเร็จ
       router.back();
     } catch {
       setErrors({ form: 'บันทึกไม่สำเร็จ กรุณาลองอีกครั้ง' });
@@ -81,7 +84,11 @@ export function TransactionForm() {
       style={{ flex: 1 }}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+      <ScrollView
+        contentContainerStyle={styles.container}
+        keyboardShouldPersistTaps="handled"
+        contentInsetAdjustmentBehavior="automatic"
+      >
         <VStack space="md">
           {Object.keys(errors).length > 0 ? (
             <Text color={COLORS.expense} size="sm">
@@ -124,7 +131,7 @@ export function TransactionForm() {
               />
             </Input>
             {amountPreview ? (
-              <Text size="xs" color={COLORS.muted}>
+              <Text size="xs" color={COLORS.muted} selectable>
                 = {amountPreview}
               </Text>
             ) : null}

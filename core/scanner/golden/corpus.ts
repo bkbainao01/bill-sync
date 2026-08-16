@@ -547,4 +547,138 @@ VAT 7% 34.25`,
       ],
     },
   },
+  {
+    id: 'atm-withdrawal',
+    label: 'ตู้ ATM ธนาคารกรุงไทย — ใบเสร็จถอนเงิน (ยอดคงเหลือต้องไม่หลุดเป็นรายการ/ยอดรวม)',
+    rawText: `ธนาคารกรุงไทย จำกัด (มหาชน)
+ใบเสร็จถอนเงินสด
+31/08/2569 14:45:26
+เครื่อง ATM รหัส 1234
+
+บัญชีเลขที่ xxxxxxxx1234
+ยอดถอน 2,000.00
+ค่าธรรมเนียม 10.00
+รวม 2,010.00
+ยอดคงเหลือ 5,432.10`,
+    llmResponse: `{
+  "merchant": { "value": "ธนาคารกรุงไทย จำกัด (มหาชน)", "confidence": 0.98 },
+  "total": { "value": 2010, "confidence": 0.95 },
+  "date": { "value": "2026-08-31", "confidence": 0.95 },
+  "vat": { "value": null, "confidence": 0.95 },
+  "items": { "value": [
+    { "name": "ยอดถอน", "price": 2000 },
+    { "name": "ค่าธรรมเนียม", "price": 10 }
+  ], "confidence": 0.85 },
+  "summary": "ใบเสร็จถอนเงินสด ธนาคารกรุงไทย 31 ส.ค. 2569 รวม 2,010.00 บาท"
+}`,
+    imagePath: 'golden/images/atm-withdrawal.png',
+    expected: {
+      merchant: 'ธนาคารกรุงไทย จำกัด (มหาชน)',
+      total: 2010,
+      date: '2026-08-31',
+      vat: null,
+      items: [
+        { name: 'ยอดถอน', price: 2000 },
+        { name: 'ค่าธรรมเนียม', price: 10 },
+      ],
+    },
+  },
+  {
+    id: 'coffee-long',
+    label: 'ร้านกาแฟ แบบยาว — 10 รายการ ชื่อสินค้าภาษาอังกฤษ + ออเดอร์ #',
+    rawText: `กาแฟสดภูเขียว ฟาร์ม
+20/09/2569 09:15:44
+ออเดอร์ #042
+
+Iced Americano 75.00
+Iced Latte 85.00
+Espresso 65.00
+Cappuccino 85.00
+Matcha Latte 95.00
+Hot Chocolate 75.00
+Croissant 55.00
+Banana Bread 45.00
+Blueberry Muffin 55.00
+Orange Juice 70.00
+
+รวมทั้งสิ้น 705.00
+เงินสด 1,000.00
+เงินทอน 295.00`,
+    llmResponse: `{
+  "merchant": { "value": "กาแฟสดภูเขียว ฟาร์ม", "confidence": 0.97 },
+  "total": { "value": 705, "confidence": 0.99 },
+  "date": { "value": "2026-09-20", "confidence": 0.95 },
+  "vat": { "value": null, "confidence": 0.95 },
+  "items": { "value": [
+    { "name": "Iced Americano", "price": 75 },
+    { "name": "Iced Latte", "price": 85 },
+    { "name": "Espresso", "price": 65 },
+    { "name": "Cappuccino", "price": 85 },
+    { "name": "Matcha Latte", "price": 95 },
+    { "name": "Hot Chocolate", "price": 75 },
+    { "name": "Croissant", "price": 55 },
+    { "name": "Banana Bread", "price": 45 },
+    { "name": "Blueberry Muffin", "price": 55 },
+    { "name": "Orange Juice", "price": 70 }
+  ], "confidence": 0.95 },
+  "summary": "ใบเสร็จกาแฟสดภูเขียว ฟาร์ม 10 รายการ รวม 705.00 บาท"
+}`,
+    imagePath: 'golden/images/coffee-long.png',
+    expected: {
+      merchant: 'กาแฟสดภูเขียว ฟาร์ม',
+      total: 705,
+      date: '2026-09-20',
+      vat: null,
+      items: [
+        { name: 'Iced Americano', price: 75 },
+        { name: 'Iced Latte', price: 85 },
+        { name: 'Espresso', price: 65 },
+        { name: 'Cappuccino', price: 85 },
+        { name: 'Matcha Latte', price: 95 },
+        { name: 'Hot Chocolate', price: 75 },
+        { name: 'Croissant', price: 55 },
+        { name: 'Banana Bread', price: 45 },
+        { name: 'Blueberry Muffin', price: 55 },
+        { name: 'Orange Juice', price: 70 },
+      ],
+    },
+  },
+  {
+    id: 'ptt-fuel',
+    label: 'ปตท. สถานีบริการน้ำมัน — เลขอ็อกเทน 95 กับจำนวน, หัวจ่าย, VAT',
+    rawText: `ปตท. สาขาพหลโยธิน 62
+สถานีบริการน้ำมัน
+ใบเสร็จรับเงิน
+12/09/2569 16:20:11
+หัวจ่าย 06
+
+น้ำมันเบนซิน 95 500.00
+น้ำมันดีเซล 400.00
+
+รวมทั้งสิ้น 900.00
+บัตรเครดิต xxxx 1234
+VAT 7% 58.87`,
+    llmResponse: `{
+  "merchant": { "value": "ปตท.", "confidence": 0.98 },
+  "total": { "value": 900, "confidence": 0.99 },
+  "date": { "value": "2026-09-12", "confidence": 0.95 },
+  "vat": { "value": 58.87, "confidence": 0.9 },
+  "items": { "value": [
+    { "name": "น้ำมันเบนซิน", "price": 500 },
+    { "name": "น้ำมันดีเซล", "price": 400 }
+  ], "confidence": 0.9 },
+  "summary": "ใบเสร็จปตท. สถานีบริการน้ำมัน รวม 900.00 บาท (รวม VAT 58.87)"
+}`,
+    imagePath: 'golden/images/ptt-fuel.png',
+    expected: {
+      merchant: 'ปตท.',
+      total: 900,
+      date: '2026-09-12',
+      vat: 58.87,
+      items: [
+        { name: 'น้ำมันเบนซิน', price: 500 },
+        { name: 'น้ำมันดีเซล', price: 400 },
+      ],
+    },
+  },
 ];

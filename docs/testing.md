@@ -3,8 +3,8 @@
 โครงสร้างเทส 3 ชั้น — ยิ่งล่างยิ่งเยอะ/เร็ว ยิ่งบนยิ่งน้อย/ช้าจริง:
 
 ```
-        ▲  E2E (Playwright, เบราว์เซอร์จริง)     15 specs
-       ▲▲   สแกนทุกเคส corpus 13 + เพิ่มรายการ + บิลประจำ
+        ▲  E2E (Playwright, เบราว์เซอร์จริง)     18 specs
+       ▲▲   สแกนทุกเคส corpus 13 + ฟอร์ม + บิลประจำ + ธีม + CSV + กราฟ
       ▲▲▲  Integration (vitest + fake-indexeddb)  23 tests
      ▲▲▲▲   repository + pipeline ทุกเคส corpus
     ▲▲▲▲▲  Unit (vitest)                         96 tests
@@ -33,7 +33,7 @@ npm run test:unit
 npm run test:integration   # หรือ npm test (รันรวมกับ unit)
 ```
 
-## ชั้นบน — E2E (`e2e/*.spec.ts`) · 15 specs
+## ชั้นบน — E2E (`e2e/*.spec.ts`) · 18 specs
 
 Playwright + Chromium จริง รันกับ **static export** (`expo export -p web`) ที่เสิร์ฟ
 ใต้ `/bill-sync` เหมือน GitHub Pages (ไม่ต้องรอ Metro — deterministic)
@@ -43,6 +43,9 @@ Playwright + Chromium จริง รันกับ **static export** (`expo e
   → เห็น transaction + ยอดตรง
 - `add-transaction.spec.ts` — เพิ่มรายจ่ายผ่านฟอร์ม → เห็นในรายการ
 - `recurring.spec.ts` — สร้างบิลประจำ → แบนเนอร์เตือนบนหน้ารายการ
+- `ui.spec.ts` — ธีมมืด/สว่าง (สลับทั้งแอป + persist ข้าม reload), ส่งออก CSV
+  (จับ download event + ตรวจเนื้อหาไฟล์จริง), หน้าสรุป (กราฟ `<svg>` render จริง 2 ตัว
+  + ยอด/หมวดในโดนัทตามข้อมูล)
 
 ```bash
 npm run build:web    # สร้าง dist/ ใหม่ก่อน (ครั้งเดียว/เมื่อแก้แอป)

@@ -10,9 +10,11 @@ import { useCategories } from '@/hooks/useCategories';
 import { useCreateRecurringBill } from '@/hooks/useRecurringBills';
 import { CategoryChips } from '../category/CategoryChips';
 import { WEEKDAY_THAI } from '@/core/recurring/period';
+import { BRAND } from '@/theme/tokens';
+import { hapticSuccess } from '@/lib/haptics';
 
 const COLORS = {
-  primary: '#0891b2',
+  primary: BRAND,
   white: '#ffffff',
   muted: '#64748b',
   danger: '#dc2626',
@@ -75,6 +77,7 @@ export function RecurringForm({ onDone }: { onDone?: () => void }) {
       month: result.month,
     });
     await createRb.mutateAsync(rb);
+    hapticSuccess(); // iOS: บันทึกบิลประจำสำเร็จ
     setMerchant('');
     setAmountBaht('');
     setCategoryId(null);
@@ -115,9 +118,8 @@ export function RecurringForm({ onDone }: { onDone?: () => void }) {
             value={amountBaht}
             onChangeText={setAmountBaht}
           />
-        </Input>
-        {amountPreview ? (
-          <Text size="xs" color={COLORS.muted}>
+        </Input>            {amountPreview ? (
+          <Text size="xs" color={COLORS.muted} selectable>
             = {amountPreview}
           </Text>
         ) : null}

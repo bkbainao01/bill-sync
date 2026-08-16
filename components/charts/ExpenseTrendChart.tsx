@@ -5,6 +5,7 @@ import type { MonthExpense } from '@/core/calculations/trend';
 import { niceCeil } from '@/core/calculations/trend';
 import { THAI_MONTHS_SHORT } from '@/core/calculations/format';
 import { useThemeStore } from '@/store/theme';
+import { BRAND, BRAND_DARK } from '@/theme/tokens';
 
 interface Props {
   data: MonthExpense[];
@@ -12,19 +13,19 @@ interface Props {
 }
 
 const LIGHT_COLORS = {
-  line: '#0891b2',
-  grid: 'rgba(100, 116, 139, 0.25)',
-  label: '#64748b',
-  value: '#334155',
-  area: 'rgba(8, 145, 178, 0.15)',
+  line: BRAND,
+  grid: 'rgba(120, 113, 108, 0.25)',
+  label: '#8A857C',
+  value: '#4A463E',
+  area: 'rgba(11, 110, 90, 0.14)',
 };
 
 const DARK_COLORS = {
-  line: '#22d3ee',
+  line: BRAND_DARK,
   grid: 'rgba(226, 232, 240, 0.18)',
-  label: '#94a3b8',
-  value: '#e2e8f0',
-  area: 'rgba(34, 211, 238, 0.18)',
+  label: '#9C968B',
+  value: '#D6D1C7',
+  area: 'rgba(63, 181, 155, 0.18)',
 };
 
 const PAD = { top: 20, right: 10, bottom: 26, left: 10 };

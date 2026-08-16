@@ -8,7 +8,7 @@ OCR / parser / vision-LLM อ่านบิลได้แม่นแค่ไ
 ```
 core/scanner/golden/
   types.ts        ประเภทของ golden case + ground truth
-  corpus.ts       10 ใบเสร็จตัวอย่าง (rawText + llmResponse + expected + imagePath)
+  corpus.ts       16 ใบเสร็จตัวอย่าง (rawText + llmResponse + expected + imagePath)
   score.ts        scoring (field-level) + report
   golden.test.ts  vitest: กัน regression ของ parseLlmResponse + parseOcrText
 golden/images/    รูปใบเสร็จที่วาดจาก rawText (ใช้เทสต์ LLM จริง)
@@ -136,7 +136,7 @@ npm run golden:compare report-v2.json report-mine.json
 > หลักสำคัญ: `expected` คือความจริงของใบเสร็จ (อ่านเอง) — ถ้า pipeline อ่านผิด ให้แก้ pipeline
 > ไม่ใช่แก้ expected เพื่อให้ test ผ่าน
 
-## เคสปัจจุบัน (13)
+## เคสปัจจุบัน (16)
 
 | id | บิล | จุดที่ทดสอบ |
 |---|---|---|
@@ -153,3 +153,6 @@ npm run golden:compare report-v2.json report-mine.json
 | seven-eleven-long | เซเว่น 16 รายการ | รายการเยอะ, โปรโมชั่น/ส่วนลด, แคชเชียร์/บาร์โค้ด |
 | tax-invoice | ใบกำกับภาษีเต็ม | ที่อยู่บริษัท, เลขผู้เสียภาษี, ยอดก่อนภาษี + VAT แยก, ราคา 2,500.00 |
 | water-bill | บิลค่าน้ำประปา | รวมเงินทั้งสิ้น, ค่าบำรุงรักษามิเตอร์, วันที่ครบกำหนด |
+| atm-withdrawal | ใบเสร็จถอนเงินตู้ ATM (กรุงไทย) | **ยอดคงเหลือไม่หลุดเป็นรายการ/ยอดรวม**, ค่าธรรมเนียม, เลขบัญชี |
+| coffee-long | ร้านกาแฟยาว 10 รายการ | ชื่อสินค้าภาษาอังกฤษผสม, ออเดอร์ #, เงินสด/ทอน |
+| ptt-fuel | ปตท. สถานีน้ำมัน | เลขอ็อกเทน "95" vs จำนวน, หัวจ่าย, VAT หลัง total, บัตรเครดิต |

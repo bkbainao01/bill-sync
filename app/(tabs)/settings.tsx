@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import { Card, Divider, HStack, Switch, Text, VStack, Button, ButtonText, Input, InputField } from '@gluestack-ui/themed';
 import { useRouter } from 'expo-router';
 import { requestNotificationPermission, showNotification } from '@/lib/notify';
@@ -12,6 +12,7 @@ import { useThemeStore } from '@/store/theme';
 import { useScannerSettings } from '@/store/scannerSettings';
 import { recurringStatus } from '@/core/recurring/period';
 import { todayKey } from '@/core/calculations/format';
+import { BRAND } from '@/theme/tokens';
 
 const PROVIDER_OPTIONS = [
   { id: 'openai' as const, label: 'OpenAI-compatible' },
@@ -56,7 +57,12 @@ export default function SettingsScreen() {
   };
 
   return (
-    <VStack space="md" padding={16} flex={1}>
+    <ScrollView
+      style={{ flex: 1 }}
+      contentContainerStyle={{ padding: 16, paddingBottom: 48 }}
+      contentInsetAdjustmentBehavior="automatic"
+    >
+    <VStack space="md">
       <Card style={{ borderRadius: 12 }}>
         <HStack space="md" alignItems="center" justifyContent="space-between">
           <VStack space="xs">
@@ -99,8 +105,8 @@ export default function SettingsScreen() {
                     key={opt.id}
                     size="sm"
                     variant={active ? 'solid' : 'outline'}
-                    style={{ backgroundColor: active ? '#0891b2' : 'transparent' }}
-                    borderColor={active ? '#0891b2' : '#cbd5e1'}
+                    style={{ backgroundColor: active ? BRAND : 'transparent' }}
+                    borderColor={active ? BRAND : '#cbd5e1'}
                     onPress={() => scanner.set({ provider: opt.id })}
                   >
                     <ButtonText style={{ color: active ? '#ffffff' : undefined }}>
@@ -236,7 +242,7 @@ export default function SettingsScreen() {
                   : `${dueCount} รายการครบกำหนด · ${recurringBills.length} บิลทั้งหมด`}
               </Text>
             </VStack>
-            <Button size="sm" bgColor="#0891b2" onPress={() => router.push('/recurring')}>
+            <Button size="sm" bgColor={BRAND} onPress={() => router.push('/recurring')}>
               <ButtonText style={{ color: '#ffffff' }}>จัดการ</ButtonText>
             </Button>
           </HStack>
@@ -291,5 +297,6 @@ export default function SettingsScreen() {
         BillSync v0.1.0 — Local-first · Privacy-first
       </Text>
     </VStack>
+    </ScrollView>
   );
 }

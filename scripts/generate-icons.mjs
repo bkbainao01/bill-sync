@@ -10,9 +10,9 @@ import { fileURLToPath } from 'node:url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
 
-const CYAN = [8, 145, 178]; // #0891b2
-const CYAN_LIGHT = [34, 211, 238]; // #22d3ee
-const CYAN_PALE = [165, 243, 252]; // #a5f3fc
+const CYAN = [11, 110, 90]; // #0B6E5A — teal หมึก (ธีม thermal slip)
+const CYAN_LIGHT = [63, 181, 155]; // #3FB59B
+const CYAN_PALE = [197, 228, 218]; // #C5E4DA
 const WHITE = [255, 255, 255];
 
 /** จุด (x,y) อยู่ในสี่เหลี่ยมมุมมน (พิกัด 512-space) */

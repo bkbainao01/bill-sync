@@ -10,6 +10,7 @@ import { useDeleteTransaction, useTransactions } from '@/hooks/useTransactions';
 import { monthKey } from '@/core/calculations/summary';
 import { useUiStore } from '@/store/ui';
 import { confirmAction } from '@/lib/confirm';
+import { BRAND } from '@/theme/tokens';
 
 export default function TransactionsScreen() {
   const router = useRouter();
@@ -27,19 +28,26 @@ export default function TransactionsScreen() {
     () => transactions.filter((t) => monthKey(t.date) === selectedMonth),
     [transactions, selectedMonth],
   );
+  const monthExpense = useMemo(
+    () =>
+      monthTransactions
+        .filter((t) => t.type === 'expense' && t.status === 'confirmed')
+        .reduce((sum, t) => sum + t.amount, 0),
+    [monthTransactions],
+  );
 
   return (
     <Box flex={1} padding={16} bg="$backgroundLight50">
-      <MonthPicker />
+      <MonthPicker totalSatang={monthExpense} />
       <DueSoonBanner />
       <Button
         variant="outline"
-        borderColor="#0891b2"
+        borderColor={BRAND}
         onPress={() => router.push('/scan')}
-        style={{ marginBottom: 12 }}
+        style={{ marginBottom: 12, borderRadius: 999 }}
       >
-        <Ionicons name="scan-outline" size={18} color="#0891b2" />
-        <ButtonText color="#0891b2" style={{ marginLeft: 6 }}>
+        <Ionicons name="scan-outline" size={18} color={BRAND} />
+        <ButtonText color={BRAND} style={{ marginLeft: 6 }}>
           สแกนบิลด้วย AI
         </ButtonText>
       </Button>
@@ -61,7 +69,7 @@ export default function TransactionsScreen() {
           bottom: 16,
           borderRadius: 999,
           paddingHorizontal: 20,
-          backgroundColor: '#0891b2',
+          backgroundColor: BRAND,
         }}
         onPress={() => router.push('/transaction/new')}
       >

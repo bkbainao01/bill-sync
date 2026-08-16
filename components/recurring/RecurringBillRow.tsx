@@ -6,6 +6,7 @@ import type { RecurringBill } from '@/core/entities/recurringBill';
 import type { RecurringStatusInfo } from '@/core/recurring/period';
 import { cadenceLabel } from '@/core/recurring/period';
 import { formatBaht, formatDateThai } from '@/core/calculations/format';
+import { BRAND } from '@/theme/tokens';
 
 interface Props {
   rb: RecurringBill;
@@ -72,7 +73,7 @@ export function RecurringBillRow({
             {status.status === 'due' ? (
               <Button
                 size="sm"
-                bgColor="#0891b2"
+                bgColor={BRAND}
                 isDisabled={isPending}
                 onPress={() => onCreateTransaction(rb)}
               >

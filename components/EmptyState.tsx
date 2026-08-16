@@ -1,6 +1,7 @@
 import { View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Text, VStack } from '@gluestack-ui/themed';
+import { SLATE } from '@/theme/tokens';
 
 interface Props {
   icon: keyof typeof Ionicons.glyphMap;
@@ -17,7 +18,7 @@ export function EmptyState({ icon, title, description }: Props) {
       flex={1}
       style={{ paddingVertical: 48, paddingHorizontal: 24 }}
     >
-      <Ionicons name={icon} size={48} color="#94a3b8" />
+      <Ionicons name={icon} size={48} color={SLATE} />
       <Text fontWeight="$bold" size="lg">
         {title}
       </Text>

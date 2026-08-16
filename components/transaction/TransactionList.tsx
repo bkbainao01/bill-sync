@@ -3,6 +3,7 @@ import { Divider, Spinner, Center } from '@gluestack-ui/themed';
 import type { Category } from '@/core/entities/category';
 import type { Transaction } from '@/core/entities/transaction';
 import { TransactionRow } from './TransactionRow';
+import { BRAND } from '@/theme/tokens';
 import { EmptyState } from '../EmptyState';
 
 interface Props {
@@ -16,7 +17,7 @@ export function TransactionList({ transactions, categoriesById, isLoading, onDel
   if (isLoading) {
     return (
       <Center flex={1}>
-        <Spinner color="#0891b2" />
+        <Spinner color={BRAND} />
       </Center>
     );
   }
@@ -45,6 +46,7 @@ export function TransactionList({ transactions, categoriesById, isLoading, onDel
       )}
       style={styles.list}
       contentContainerStyle={styles.content}
+      contentInsetAdjustmentBehavior="automatic"
     />
   );
 }

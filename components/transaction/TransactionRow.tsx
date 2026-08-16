@@ -4,6 +4,7 @@ import { HStack, Text, VStack } from '@gluestack-ui/themed';
 import type { Category } from '@/core/entities/category';
 import type { Transaction } from '@/core/entities/transaction';
 import { formatBaht, formatDateThai } from '@/core/calculations/format';
+import { FONT_MONO } from '@/theme/tokens';
 
 interface Props {
   transaction: Transaction;
@@ -27,12 +28,17 @@ export function TransactionRow({ transaction, category, onDelete }: Props) {
         <Text fontWeight="$semibold" numberOfLines={1}>
           {title}
         </Text>
-        <Text size="sm" color="$textLight400">
+        <Text size="sm" color="$textLight400" selectable>
           {formatDateThai(transaction.date)}
           {transaction.note ? ` · ${transaction.note}` : ''}
         </Text>
       </VStack>
-      <Text fontWeight="$bold" color={isIncome ? '$textSuccess700' : undefined}>
+      <Text
+        fontWeight="$bold"
+        color={isIncome ? '$textSuccess700' : undefined}
+        selectable
+        style={{ fontFamily: FONT_MONO, fontVariant: ['tabular-nums'] }}
+      >
         {isIncome ? '+' : '-'}
         {formatBaht(transaction.amount)}
       </Text>

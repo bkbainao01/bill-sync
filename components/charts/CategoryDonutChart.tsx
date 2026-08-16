@@ -2,6 +2,7 @@ import { View } from 'react-native';
 import Svg, { Circle, Path } from 'react-native-svg';
 import { Text, VStack, HStack } from '@gluestack-ui/themed';
 import { formatBaht } from '@/core/calculations/format';
+import { FONT_MONO } from '@/theme/tokens';
 
 export interface DonutSlice {
   id: string;
@@ -86,7 +87,11 @@ export function CategoryDonutChart({ data, size = 170, thickness = 26 }: Props) 
           ))}
         </Svg>
         <View style={{ position: 'absolute', alignItems: 'center' }}>
-          <Text fontWeight="$bold" size="lg">
+          <Text
+            fontWeight="$bold"
+            size="lg"
+            style={{ fontFamily: FONT_MONO, fontVariant: ['tabular-nums'] }}
+          >
             {formatBaht(total)}
           </Text>
           <Text size="xs" color="$textLight400">

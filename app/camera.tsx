@@ -11,6 +11,7 @@ import { parseOcrText } from '@/core/scanner/ocr';
 import { transitionBill } from '@/core/bills/flow';
 import { nowIso } from '@/core/entities/base';
 import { useCreateBill, useUpdateBill } from '@/hooks/useBills';
+import { BRAND } from '@/theme/tokens';
 
 const MAX_DIMENSION = 1280;
 
@@ -35,7 +36,7 @@ export default function CameraScreen() {
           <Text size="sm" color="$textLight400" textAlign="center">
             บนเว็บ ให้ใช้การเลือกภาพบิลแทน (OCR on-device ต้องรันบน iOS/Android)
           </Text>
-          <Button bgColor="#0891b2" onPress={() => router.push('/scan')}>
+          <Button bgColor={BRAND} onPress={() => router.push('/scan')}>
             <ButtonText style={{ color: '#ffffff' }}>กลับไปสแกนบิล</ButtonText>
           </Button>
         </VStack>
@@ -81,7 +82,7 @@ export default function CameraScreen() {
   if (!permission) {
     return (
       <Center flex={1}>
-        <Spinner color="#0891b2" />
+        <Spinner color={BRAND} />
       </Center>
     );
   }
@@ -97,7 +98,7 @@ export default function CameraScreen() {
           <Text size="sm" color="$textLight400" textAlign="center">
             รูปถูกประมวลผลในเครื่องเท่านั้น (OCR on-device) — ไม่ส่งขึ้นอินเทอร์เน็ต
           </Text>
-          <Button bgColor="#0891b2" onPress={() => void requestPermission()}>
+          <Button bgColor={BRAND} onPress={() => void requestPermission()}>
             <ButtonText style={{ color: '#ffffff' }}>อนุญาตการเข้าถึงกล้อง</ButtonText>
           </Button>
         </VStack>
