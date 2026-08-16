@@ -42,7 +42,7 @@ npm run golden:live -- --provider gemini --prompt "prompt ใหม่..."   # �
 | State | Zustand (theme, UI, scanner settings, reminders) + TanStack Query (data) |
 | Storage | IndexedDB (web) / expo-sqlite (native) ผ่าน repository interface |
 | AI | OpenAI-compatible / Google Gemini (vision, opt-in) + ML Kit OCR (on-device) |
-| Test | Vitest (core business logic 93 tests) |
+| Test | Vitest unit/integration 119 tests + Playwright E2E 15 specs (ทุกเคส corpus) |
 | PWA | static export + service worker + manifest |
 
 ## 🏗 สถาปัตยกรรม
@@ -68,12 +68,16 @@ npx expo start            # dev (กด w เพื่อเปิด web)
 npx expo start --web      # web เฉพาะ
 ```
 
-ทดสอบ:
+ทดสอบ (test pyramid — ดู [docs/testing.md](docs/testing.md)):
 
 ```bash
-npx vitest run            # 93 tests (core business logic)
-npx tsc --noEmit          # typecheck
+npm run test:unit         # unit: core logic + golden corpus 13 เคส (96 tests)
+npm run test:integration  # integration: repositories + pipeline ทุกเคส corpus (23 tests)
+npm run test:e2e          # E2E: Playwright กับ static export (15 specs — ต้อง npm run build:web ก่อน)
+npm run typecheck         # tsc --noEmit
 ```
+
+CI (GitHub Actions) รันทั้งหมดอัตโนมัติทุก push/PR — `test` job (typecheck + vitest + golden) และ `e2e` job (Playwright)
 
 Build PWA (static export):
 

@@ -9,6 +9,10 @@
     "ios": "expo run:ios",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
+    "test:unit": "vitest run core",
+    "test:integration": "vitest run tests/integration",
+    "test:e2e": "playwright test",
+    "build:web": "expo export -p web",
     "icons": "node scripts/generate-icons.mjs",
     "golden": "npm run golden:images && npm run golden:offline",
     "golden:images": "npx tsx scripts/generate-golden-images.ts",
@@ -48,9 +52,11 @@
     "zustand": "^5.0.15"
   },
   "devDependencies": {
+    "@playwright/test": "^1.62.1",
     "@types/react": "~19.2.2",
     "babel-preset-expo": "~57.0.7",
     "canvas": "^3.2.3",
+    "fake-indexeddb": "^6.2.5",
     "pngjs": "^7.0.0",
     "tsx": "^4.23.12",
     "typescript": "~6.0.3",

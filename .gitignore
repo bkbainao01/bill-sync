@@ -28,5 +28,9 @@ yarn-error.*
 # golden corpus reports (generated)
 golden-report*.json
 
+# playwright (E2E artifacts)
+test-results/
+playwright-report/
+
 # freebuff tooling (local agent database — never commit)
 .freebuff/

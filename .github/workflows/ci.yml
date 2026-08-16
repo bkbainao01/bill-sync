@@ -30,3 +30,28 @@ jobs:
 
       - name: Golden harness offline (parser accuracy ต้อง ≥ 100%)
         run: npm run golden:offline
+
+  # ยอดพีระมิด — E2E กับ static export (dist) เหมือน GitHub Pages จริง
+  e2e:
+    name: e2e (playwright)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Build web export
+        run: npm run build:web
+
+      - name: E2E tests
+        run: npx playwright test
