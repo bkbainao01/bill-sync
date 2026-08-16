@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest';
+import { existsSync } from 'fs';
+import { resolve } from 'path';
 import { corpus } from './corpus';
 import { scoreCase, summarize, printReport } from './score';
 import { parseLlmResponse } from '../parse';
@@ -32,5 +34,16 @@ describe('golden corpus — OCR parser (parseOcrText)', () => {
       ).toBe(true);
     }
     expect(summary.overall).toBeGreaterThanOrEqual(OCR_MIN_ACCURACY);
+  });
+});
+
+describe('golden corpus — รูปประกอบ', () => {
+  it('ทุกเคสมีไฟล์รูปครบ (กันเพิ่มเคสแล้วลืมรัน npm run golden:images)', () => {
+    for (const c of corpus) {
+      expect(
+        existsSync(resolve(c.imagePath)),
+        `case ${c.id}: ไม่พบรูป ${c.imagePath} — รัน npm run golden:images ก่อน commit`,
+      ).toBe(true);
+    }
   });
 });

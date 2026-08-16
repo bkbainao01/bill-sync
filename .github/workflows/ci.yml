@@ -1,0 +1,32 @@
+name: CI
+
+# รันทุกครั้งที่ push ไป main หรือเปิด PR — กัน regression ของโค้ดหลัก + golden corpus
+on:
+  push:
+    branches: ['main']
+  pull_request:
+
+jobs:
+  test:
+    name: typecheck + vitest + golden corpus
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Unit tests (vitest — รวม golden corpus 13 เคส + ตรวจรูปครบ)
+        run: npm test
+
+      - name: Golden harness offline (parser accuracy ต้อง ≥ 100%)
+        run: npm run golden:offline
